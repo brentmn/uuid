@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"reflect"
 )
 
 type UUID string
@@ -48,6 +49,20 @@ func (u *UUID) UnmarshalText(text []byte) error {
 	_, err := hex.Decode(b, text)
 	if err == nil {
 		*u = UUID(b)
+	}
+	return err
+}
+
+// Scan implements the sql.Scanner interface
+func (u *UUID) Scan(src interface{}) error {
+	var err error
+	switch v := src.(type) {
+	case string:
+		*u, err = FromString(v)
+	case []byte:
+		*u, err = FromString(string(v))
+	default:
+		return fmt.Errorf("can only scan uuid into string or []byte, %v was provided", reflect.TypeOf(v))
 	}
 	return err
 }
