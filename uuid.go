@@ -2,6 +2,7 @@ package uuid
 
 import (
 	"crypto/rand"
+	"database/sql/driver"
 	"encoding/hex"
 	"fmt"
 	"reflect"
@@ -53,7 +54,7 @@ func (u *UUID) UnmarshalText(text []byte) error {
 	return err
 }
 
-// Scan implements the sql.Scanner interface
+// Scan satisfies the sql.Scanner interface
 func (u *UUID) Scan(src interface{}) error {
 	var err error
 	switch v := src.(type) {
@@ -65,4 +66,9 @@ func (u *UUID) Scan(src interface{}) error {
 		return fmt.Errorf("can only scan uuid into string or []byte, %v was provided", reflect.TypeOf(v))
 	}
 	return err
+}
+
+// Value satisfies the sql.driver.Valuer interface
+func (u UUID) Value() (driver.Value, error) {
+	return []byte(u.String()), nil
 }
